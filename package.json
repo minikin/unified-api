@@ -1,0 +1,40 @@
+{
+  "name": "unified-api",
+  "version": "0.0.1",
+  "description": "CLI utility for ALPS translations",
+  "main": "index.js",
+  "bin": {
+    "unified": "index.js"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/minikin/unified-api.git"
+  },
+  "author": "Sasha Prokhorenko (@minikin)",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/minikin/unified-api/issues"
+  },
+  "homepage": "https://github.com/minikin/unified-api#readme",
+  "keywords": [
+    "mamund",
+    "ALPS",
+    "gRPC",
+    "REST",
+    "SDL",
+    "GraphQL",
+    "OpenAPI",
+    "AsyncAPI"
+  ],
+  "dependencies": {
+    "boxen": "^4.2.0",
+    "chalk": "^3.0.0",
+    "jstoxml": "^2.0.1",
+    "yamljs": "^0.3.0",
+    "yargs": "^16.1.0"
+  },
+  "devDependencies": {}
+}
