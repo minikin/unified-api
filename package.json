@@ -3,11 +3,15 @@
   "version": "0.0.1",
   "description": "CLI utility for ALPS translations",
   "main": "index.js",
+  "bin": {
+    "unified": "index.js"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
-    "url": "git://github.com/minikin/unified-api.git"
+    "type": "git",
+    "url": "https://github.com/minikin/unified-api.git"
   },
   "author": "Sasha Prokhorenko (@minikin)",
   "license": "ISC",
