@@ -1,14 +1,14 @@
 #!/usr/bin/env node
 
 // ****************************************************
-// unified - an ALPS-to-??? translator
+// unified-api - an ALPS-to-??? translator
 //
 // author:  @mamund
 // date:    2020-04
 //
 // desc:    translates ALPS.yaml into:
 //          - ALPS.json
-//          - SDL
+//          - GraphQL SDL
 //          - protobuf
 //          - openAPI
 //          - asyncAPI
