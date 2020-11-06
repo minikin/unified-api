@@ -1,6 +1,6 @@
 {
   "name": "unified-api",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "CLI utility for ALPS translations",
   "main": "index.js",
   "bin": {

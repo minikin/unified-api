@@ -1,17 +1,40 @@
-import { usage } from "yargs";
-import { load } from "yamljs";
-import { writeFileSync } from 'fs';
+#!/usr/bin/env node
+
+// ****************************************************
+// unified - an ALPS-to-??? translator
+//
+// author:  @mamund
+// date:    2020-04
+//
+// desc:    translates ALPS.yaml into:
+//          - ALPS.json
+//          - SDL
+//          - protobuf
+//          - openAPI
+//          - asyncAPI
+//
+// notes    install as npm install -g .
+//          proof-of-concept utility (needs work)
+// ****************************************************
+
+// modules
+const chalk = require("chalk");
+const boxen = require("boxen");
+const yargs = require("yargs");
+const YAML = require("yamljs");
+const fs = require('fs');
 
 // args
-const options = usage("Usage: -f <alpsfile> -t <format type> -o <outfile>")
- .option("f", { alias: "file",
-    describe: "Input file (alps.yaml)",
+const options = yargs
+ .usage("Usage: -f <alpsfile> -t <format type> -o <outfile>")
+ .option("f", { alias: "file", 
+    describe: "Input file (alps.yaml)", 
     type: "string", demandOption: true })
- .option("t", { alias: "type",
+ .option("t", { alias: "type", 
     describe: "Format Type \n([j]son, [p]roto, [s]dl, [a]syncapi, [o]penapi)",
     type: "string", demandOption: false})
- .option("o", { alias: "out",
-    describe: "Output file",
+ .option("o", { alias: "out", 
+    describe: "Output file", 
     type: "string", demandOption: false})
  .argv;
 
@@ -27,8 +50,8 @@ var rtn = "";
 // convert YAML into JSON
 try {
   var file = process.cwd() + "/" + options.file;
-  alps_document = load(file);
-}
+  alps_document = YAML.load(file);
+} 
 catch(err) {
   console.log("ERROR: " + err);
 }
@@ -36,7 +59,7 @@ catch(err) {
 // selection translation
 try {
   format = options.type.toLowerCase();
-}
+} 
 catch {
   format = "json";
 }
@@ -55,7 +78,7 @@ switch (format) {
   case "asyncapi":
     rtn = toAsync(alps_document);
     break;
-  case "o":
+  case "o":		
   case "oas":
   case "open":
   case "openapi":
@@ -68,7 +91,7 @@ switch (format) {
   case "j":
   case "json":
     rtn = toJSON(alps_document);
-    break;
+    break;		
   default:
     console.log("ERROR: unknown format: "+format);
 }
@@ -76,8 +99,8 @@ switch (format) {
 // output directly
 if(options.out) {
   try {
-    writeFileSync(options.out, rtn);
-  }
+    fs.writeFileSync(options.out, rtn);
+  } 
   catch(err) {
     console.log("ERROR: "+err);
   }
@@ -121,14 +144,14 @@ function toProto(doc) {
   rtn += '// http://github.com/mamund/2020-04-unified-api-design\n';
   rtn += '// *******************************************************************\n';
   rtn += '\n';
-
+  
   // params
   coll = doc.alps.descriptor.filter(semantic);
   coll.forEach(function(msg) {
     rtn += 'message '+msg.id+'Params {\n';
     var c = 0;
     c++;
-    rtn += '  string '+msg.id+' = '+c+';\n';
+    rtn += '  string '+msg.id+' = '+c+';\n';    
     rtn += '}\n';
   });
   rtn += '\n';
@@ -140,7 +163,7 @@ function toProto(doc) {
     var c = 0;
     msg.descriptor.forEach(function(prop) {
       c++;
-      rtn += '  string '+prop.href+' = '+c+';\n';
+      rtn += '  string '+prop.href+' = '+c+';\n';    
     });
     rtn += '}\n';
     rtn += 'message '+msg.id+'Response {\n';
@@ -152,26 +175,26 @@ function toProto(doc) {
 
   // procedures
   rtn += 'service '+(doc.alps.ext.filter(metadata_title)[0].value.replace(/ /g,'_')||"ALPS_API")+'_Service {\n';
-
+  
   coll = doc.alps.descriptor.filter(safe);
   coll.forEach(function(item) {
     rtn += '  rpc '+item.id+'('
     if(item.descriptor) {
-      rtn += item.descriptor[0].href;
+      rtn += item.descriptor[0].href;      
     }
     else {
       rtn += item.rt+'Empty';
     }
-    rtn += ') returns ('+item.rt+'Response) {};\n';
+    rtn += ') returns ('+item.rt+'Response) {};\n';  
   });
-
+  
   coll = doc.alps.descriptor.filter(unsafe);
   coll.forEach(function(item) {
     rtn += '  rpc '+item.id+'('
     if(item.descriptor) {
-      rtn += item.descriptor[0].href;
+      rtn += item.descriptor[0].href;      
     }
-    rtn += ') returns ('+item.rt+'Response) {};\n';
+    rtn += ') returns ('+item.rt+'Response) {};\n';  
   });
 
   coll = doc.alps.descriptor.filter(idempotent);
@@ -181,15 +204,17 @@ function toProto(doc) {
       rtn += item.descriptor[0].href;
       if(item.descriptor[0].href === "#id") {
         rtn += "Params";
-      }
+      }      
     }
-    rtn += ') returns ('+item.rt+'Response) {};\n';
+    rtn += ') returns ('+item.rt+'Response) {};\n';  
   });
-
+  
   rtn += '}\n';
-
+ 
+  // clean up 
   rtn = rtn.replace(rxHash,"");
   rtn = rtn.replace(rxQ,"#");
+   
   return rtn;
 }
 
@@ -215,12 +240,12 @@ function toSDL(doc) {
   coll.forEach(function(item) {
     rtn += 'type '+item.id+' {\n';
     item.descriptor.forEach(function(prop) {
-      rtn += '  '+prop.href+': String!\n';
+      rtn += '  '+prop.href+': String!\n';    
     });
     rtn += '}\n';
   }); 
   rtn += '\n';
-
+  
   // query
   coll = doc.alps.descriptor.filter(safe);
   coll.forEach(function(item) {
@@ -237,17 +262,17 @@ function toSDL(doc) {
     rtn += '  '+item.id+'(';
     if(item.descriptor) {
       rtn += item.descriptor[0].href+': String!';
-    }
+    }  
     rtn += '): '+item.rt+'\n';
-  });
+  });                       
   coll = doc.alps.descriptor.filter(idempotent);
   coll.forEach(function(item) {
     rtn += '  '+item.id+'(';
     if(item.descriptor) {
       rtn += item.descriptor[0].href+': String!';
-    }
-    rtn += '): '+item.rt+'\n';
-  });
+    }  
+    rtn += '): '+item.rt+'\n';  
+  });                       
   rtn += '}\n';
 
   // final schema declaration
@@ -256,10 +281,10 @@ function toSDL(doc) {
   rtn += '  query: Query,\n';
   rtn += '  mutation: Mutation\n';
   rtn += '}\n';
-
+  
   rtn = rtn.replace(rxHash,"");
   rtn = rtn.replace(rxQ,"#");
-
+  
   return rtn;
 }
 
@@ -273,7 +298,7 @@ function toOAS(doc) {
   // preamble
   rtn += "openapi: 3.0.1\n";
   rtn += "\n";
-
+  
   // signature
   rtn += '?? *******************************************************************\n';
   rtn += '?? generated by "unified" from ' + options.file + '\n';
@@ -282,23 +307,24 @@ function toOAS(doc) {
   rtn += '?? http://github.com/mamund/2020-04-unified-api-design\n';
   rtn += '?? *******************************************************************\n';
   rtn += '\n';
-
+  
+    
   // info section
   rtn += "info:\n";
   rtn += "  title: " + (doc.alps.ext.filter(metadata_title)[0].value||"ALPS API") + "\n";
   rtn += "  description: " + (doc.alps.doc.value||"Generated from ALPS file " + options.file) +"\n";
   rtn += "  version: 1.0.0\n";
   rtn += "\n";
-
+  
   if(doc.alps.ext.filter(metadata_root)) {
     rtn += "servers:\n"
     rtn += "- url: '" + doc.alps.ext.filter(metadata_root)[0].value + "'\n";
     rtn += "\n";
   }
-
+  
   // paths
   rtn += "paths:\n";
-
+  
   // gets
   coll = doc.alps.descriptor.filter(safe);
   coll.forEach(function(item) {
@@ -316,7 +342,7 @@ function toOAS(doc) {
     rtn += "                items:\n";
     rtn += "                  $ref: '" + "??/components/schemas/" + (item.rt||item.returns) + "'\n";
   });
-
+  
   // posts
   coll = doc.alps.descriptor.filter(unsafe);
   coll.forEach(function(item) {
@@ -377,16 +403,16 @@ function toOAS(doc) {
       rtn += "          description: " + prop.href + " of " + item.id +"\n";
       rtn += "          required: true\n";
       rtn += "          schema:\n";
-      rtn += "            type: string\n";
+      rtn += "            type: string\n";      
     });
     rtn += "      responses:\n";
     rtn += "        204:\n";
     rtn += "          description: delete "+ item.id + "\n";
   });
   rtn += "\n";
-
+    
   // components
-  rtn += "components:\n";
+  rtn += "components:\n";  
   rtn += "  schemas:\n";
   coll = doc.alps.descriptor.filter(groups);
   coll.forEach(function(item) {
@@ -399,14 +425,14 @@ function toOAS(doc) {
     item.descriptor.forEach(function(prop) {
       rtn += "          " + prop.href+":\n";
       rtn += "            type: string\n";
-      rtn += "            example: " + rString(prop.href) + "\n";
-    });
+      rtn += "            example: " + rString(prop.href) + "\n"; 
+    });      
   });
-
+  
   // clean up doc
   rtn = rtn.replace(rxHash,"");
   rtn = rtn.replace(rxQ,"#");
-
+  
   return rtn;
 }
 
@@ -418,7 +444,7 @@ function toAsync(doc) {
   // preamble
   rtn += "async: 2.0.0\n";
   rtn += "\n";
-
+  
   // signature
   rtn += '?? *******************************************************************\n';
   rtn += '?? generated by "unified" from ' + options.file + '\n';
@@ -442,14 +468,14 @@ function toAsync(doc) {
   rtn += "    - 'amqp'\n";
   rtn += "    - 'mqtt'\n";
   rtn += "\n";
-
+  
   rtn += "# topics:\n";
   rtn += "# **** TBD ****";
-
+  
   // clean up doc
   rtn = rtn.replace(rxHash,"");
   rtn = rtn.replace(rxQ,"#");
-
+  
   return rtn;
 }
 
