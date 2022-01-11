@@ -1,6 +1,7 @@
 # [WIP] Unified API
 
 Based on [GOTO 2020 • GraphQL, gRPC and REST, Oh My! A Method for Unified API Design • Mike Amundsen](https://youtu.be/7Anvawx9ixY)
+Check this [repo](https://github.com/mamund/alps-unified)
 
 Install `unified-api` npm module globally
 
